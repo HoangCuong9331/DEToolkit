@@ -8,6 +8,10 @@
 import UIKit
 
 public extension UIColor {
+    /// Initializes a `UIColor` instance from a hexadecimal color string.
+    ///
+    /// - Parameter hex: A hex string representation of the color (e.g., `"#FF5733"` or `"FF5733"`).
+    /// - Returns: A `UIColor` instance if the hex string is valid; otherwise, `nil`.
     convenience init?(hex: String) {
         var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
 

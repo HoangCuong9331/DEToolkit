@@ -8,6 +8,15 @@
 import UIKit
 
 extension CALayer {
+    /// Applies a Sketch-like shadow effect to the layer.
+    ///
+    /// - Parameters:
+    ///   - color: The shadow color. Default is black.
+    ///   - alpha: The opacity of the shadow, ranging from 0 (transparent) to 1 (opaque). Default is 0.5.
+    ///   - x: The horizontal offset of the shadow. Positive values move the shadow to the right. Default is 0.
+    ///   - y: The vertical offset of the shadow. Positive values move the shadow downward. Default is 2.
+    ///   - blur: The blur radius of the shadow. Higher values create a softer shadow. Default is 4.
+    ///   - spread: The expansion of the shadow. A positive value increases the shadow size, while a negative value shrinks it. Default is 0.
     @MainActor
     func applySketchShadow(
         color: UIColor = .black,
