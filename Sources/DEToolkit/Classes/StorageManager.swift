@@ -34,6 +34,8 @@ public protocol StorageManager {
 }
 
 public final class KeychainManager: StorageManager {
+    public init() { }
+    
     public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
@@ -88,6 +90,8 @@ public final class KeychainManager: StorageManager {
 }
 
 public final class UserDefaultManager: StorageManager {
+    public init() { }
+    
     public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
