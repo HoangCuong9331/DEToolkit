@@ -8,7 +8,7 @@
 import Foundation
 import Security
 
-protocol StorageManager {
+public protocol StorageManager {
     
     /// Saves a Codable object to storage.
     ///
@@ -33,8 +33,8 @@ protocol StorageManager {
     func deleteObject(forKey key: String) -> Bool
 }
 
-final class KeychainManager: StorageManager {
-    func saveObject(_ object: Codable, forKey key: String) -> Bool {
+public final class KeychainManager: StorageManager {
+    public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
             return false
@@ -54,7 +54,7 @@ final class KeychainManager: StorageManager {
         return status == errSecSuccess
     }
     
-    func retrieveObject<T: Codable>(forKey key: String) -> T? {
+    public func retrieveObject<T: Codable>(forKey key: String) -> T? {
         guard let kTrue = kCFBooleanTrue else { return nil }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -75,7 +75,7 @@ final class KeychainManager: StorageManager {
         return nil
     }
     
-    func deleteObject(forKey key: String) -> Bool {
+    public func deleteObject(forKey key: String) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: Bundle.main.bundleIdentifier ?? "",
@@ -87,8 +87,8 @@ final class KeychainManager: StorageManager {
     }
 }
 
-final class UserDefaultManager: StorageManager {
-    func saveObject(_ object: Codable, forKey key: String) -> Bool {
+public final class UserDefaultManager: StorageManager {
+    public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
             return false
@@ -98,7 +98,7 @@ final class UserDefaultManager: StorageManager {
         return UserDefaults.standard.synchronize()
     }
     
-    func retrieveObject<T: Codable>(forKey key: String) -> T? {
+    public func retrieveObject<T: Codable>(forKey key: String) -> T? {
         guard let data = UserDefaults.standard.data(forKey: key) else {
             return nil
         }
@@ -107,7 +107,7 @@ final class UserDefaultManager: StorageManager {
         return try? decoder.decode(T.self, from: data)
     }
     
-    func deleteObject(forKey key: String) -> Bool {
+    public func deleteObject(forKey key: String) -> Bool {
         UserDefaults.standard.removeObject(forKey: key)
         return UserDefaults.standard.synchronize()
     }
