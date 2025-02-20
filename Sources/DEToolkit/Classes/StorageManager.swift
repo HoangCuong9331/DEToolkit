@@ -16,7 +16,6 @@ public protocol StorageManager {
     ///   - object: The Codable object to be saved.
     ///   - key: A unique key for storing the object.
     /// - Returns: `true` if the object was successfully saved, `false` otherwise.
-    @discardableResult
     func saveObject(_ object: Codable, forKey key: String) -> Bool
     
     /// Retrieves a Codable object from storage.
@@ -29,13 +28,13 @@ public protocol StorageManager {
     ///
     /// - Parameter key: The unique key associated with the object to be deleted.
     /// - Returns: `true` if the object was successfully deleted, `false` otherwise.
-    @discardableResult
     func deleteObject(forKey key: String) -> Bool
 }
 
 public final class KeychainManager: StorageManager {
     public init() { }
     
+    @discardableResult
     public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
@@ -77,6 +76,7 @@ public final class KeychainManager: StorageManager {
         return nil
     }
     
+    @discardableResult
     public func deleteObject(forKey key: String) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -92,6 +92,7 @@ public final class KeychainManager: StorageManager {
 public final class UserDefaultManager: StorageManager {
     public init() { }
     
+    @discardableResult
     public func saveObject(_ object: Codable, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
@@ -111,6 +112,7 @@ public final class UserDefaultManager: StorageManager {
         return try? decoder.decode(T.self, from: data)
     }
     
+    @discardableResult
     public func deleteObject(forKey key: String) -> Bool {
         UserDefaults.standard.removeObject(forKey: key)
         return UserDefaults.standard.synchronize()
