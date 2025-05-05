@@ -52,4 +52,14 @@ public extension String {
         let fontAttributes = [NSAttributedString.Key.font: font]
         return self.size(withAttributes: fontAttributes)
     }
+    
+    /// Converts a JSON-formatted string into an `NSDictionary`.
+    ///
+    /// - Returns: An `NSDictionary` representation of the JSON string, or an empty dictionary if parsing fails.
+    func toDictionary() -> NSDictionary {
+        guard let data = self.data(using: .utf8), let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary  else {
+            return [:]
+        }
+        return dict
+    }
 }

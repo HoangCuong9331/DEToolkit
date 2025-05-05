@@ -31,7 +31,7 @@ import Foundation
 ///     }
 /// }
 /// ```
-class AsynchronousOperation: Operation, @unchecked Sendable {
+public class AsynchronousOperation: Operation, @unchecked Sendable {
     public override var isAsynchronous: Bool {
         return true
     }

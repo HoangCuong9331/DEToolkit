@@ -7,7 +7,7 @@
 
 import UIKit
 
-extension CALayer {
+public extension CALayer {
     /// Applies a Sketch-like shadow effect to the layer.
     ///
     /// - Parameters:
