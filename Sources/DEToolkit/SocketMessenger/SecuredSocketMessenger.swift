@@ -28,7 +28,7 @@ public class SecuredSocketMessenger: SocketMessenger {
         return certificate
     }
 
-    override func open() {
+    public override func open() {
         print("socket open. \(String(describing: address)):\(String(describing: port))")
 
         Stream.getStreamsToHost(withName: address, port: port, inputStream: &inputStream, outputStream: &outputStream)

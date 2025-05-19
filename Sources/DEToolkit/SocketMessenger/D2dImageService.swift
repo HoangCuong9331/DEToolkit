@@ -56,7 +56,7 @@ public struct D2dConnectionInfo {
 /// A service responsible for sending and receiving D2D messages using a messenger over socket or samba.
 /// This version is adapted to use Combine for reactive programming.
 @available(iOS 13.0, *)
-public class D2dService {
+public class D2dImageService {
     let messenger: D2dMessenger
     let connectionInfo: D2dConnectionInfo
 
@@ -177,7 +177,7 @@ public class D2dService {
     private var cancellables = Set<AnyCancellable>()
 }
 
-protocol D2dMessenger {
+public protocol D2dMessenger {
     func open()
     func send(message: SocketSendMessage)
     func receive(message: SocketReceiveMessage)

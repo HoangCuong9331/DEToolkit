@@ -41,13 +41,13 @@ public class SocketMessenger: NSObject, D2dMessenger {
         }
     }
     
-    init(address: String, port: Int, delegate: SocketMessengerDelegate? = nil) {
+    public init(address: String, port: Int, delegate: SocketMessengerDelegate? = nil) {
         self.address = address
         self.port = port
         self.delegate = delegate
     }
     
-    func open() {
+    public func open() {
         print("Socket open. \(String(describing: address)):\(String(describing: port))")
         Stream.getStreamsToHost(withName: address, port: port, inputStream: &inputStream, outputStream: &outputStream)
         
@@ -65,7 +65,7 @@ public class SocketMessenger: NSObject, D2dMessenger {
         dispatchQueue = DispatchQueue(label: "SocketMessenger", qos: .userInitiated)
     }
     
-    func send(message: SocketSendMessage) {
+    public func send(message: SocketSendMessage) {
         print("Socket enqueue message (socket status: \(String(describing: self.outputStream?.streamStatus.rawValue)))")
         dispatchQueue?.async { [weak self] in
             self?.sendMessageQueue.push(message)
@@ -73,7 +73,7 @@ public class SocketMessenger: NSObject, D2dMessenger {
         write()
     }
     
-    func receive(message: SocketReceiveMessage) {
+    public func receive(message: SocketReceiveMessage) {
         receiveMessageQueue.push(message)
         read()
     }
@@ -109,7 +109,7 @@ public class SocketMessenger: NSObject, D2dMessenger {
         })
     }
     
-    func close() {
+    public func close() {
         print("Socket close. \(String(describing: address)):\(String(describing: port))")
         inputStream?.close()
         outputStream?.close()
@@ -137,7 +137,7 @@ public class SocketMessenger: NSObject, D2dMessenger {
                       .store(in: &self.timer)
     }
     
-    func invalidateTimer() {
+    public func invalidateTimer() {
         self.timer.map { a in
             a.cancel()
         }
@@ -239,7 +239,7 @@ class SocketMessageQueue<T> {
 }
 
 public struct SocketSendMessage {
-    enum Status {
+    public enum Status {
         case success
         case fail
     }
@@ -247,7 +247,7 @@ public struct SocketSendMessage {
     let value: SocketMessageValue
     let completion: ((Status) -> Void)?
     
-    init(value: SocketMessageValue, completion: ((Status) -> Void)? = nil) {
+    public init(value: SocketMessageValue, completion: ((Status) -> Void)? = nil) {
         self.value = value
         self.completion = completion
     }
@@ -256,7 +256,7 @@ public struct SocketSendMessage {
 public struct SocketReceiveMessage {
     let readSize: Int
     let completion: ((Data) -> Void)
-    init(readSize: Int, completion: @escaping ((Data) -> Void)) {
+    public init(readSize: Int, completion: @escaping ((Data) -> Void)) {
         self.readSize = readSize
         self.completion = completion
     }
