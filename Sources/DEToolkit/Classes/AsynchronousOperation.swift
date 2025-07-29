@@ -30,6 +30,53 @@ import Foundation
 ///         }
 ///     }
 /// }
+///  ```
+/// - Atomic Example:
+/// ```
+///final class AdderOperation: AsynchronousOperation, @unchecked Sendable {
+///    static var value : Int = 0
+///
+///    override func main() {
+///        super.main()
+///        
+///        addOne { [weak self] in
+///            guard let self = self else { return }
+///            self.finish()
+///        }
+///    }
+///    
+///    public func addOne(completion: @Sendable @escaping () -> ()) {
+///        getSum { [weak self] currentSum in
+///            guard let self = self else { return }
+///            let newSum = currentSum + 1
+///            self.setSum(newSum: newSum) {
+///                completion()
+///            }
+///        }
+///    }
+///    
+///    private func getSum(completion: @Sendable @escaping (Int) -> ()) {
+///        self.pause {
+///            print("found current sum is \(Self.value)")
+///            completion(Self.value)
+///        }
+///    }
+///    
+///    private func setSum(newSum: Int, completion: @Sendable @escaping () -> ()) {
+///        self.pause {
+///            Self.value = newSum
+///            print("set current sum to \(Self.value)")
+///            completion()
+///        }
+///    }
+///    
+///    private func pause(completion: @Sendable @escaping () -> ()) {
+///        let pause = Int.random(in: 0..<100)
+///        DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(pause)) {
+///            completion()
+///        }
+///    }
+///}
 /// ```
 public class AsynchronousOperation: Operation, @unchecked Sendable {
     public override var isAsynchronous: Bool {
