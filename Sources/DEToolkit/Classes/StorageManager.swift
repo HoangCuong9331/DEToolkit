@@ -44,8 +44,13 @@ public protocol CollectiveStorageManager: StorageManager {
 
 actor FileStorageManager: StorageManager {
     private let cacheDirectoryURL: URL
+    private let suite: String
 
-    public init(cacheDirectoryURL: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
+    public init(
+        suite: String,
+        cacheDirectoryURL: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    ) {
+        self.suite = suite
         self.cacheDirectoryURL = cacheDirectoryURL
     }
     
@@ -53,14 +58,14 @@ actor FileStorageManager: StorageManager {
     func saveObject(_ object: Codable, forKey key: String) async throws -> Bool {
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(object)
-        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         try encodedData.write(to: url)
         return true
     }
     
     func retrieveObject<T: Codable>(forKey key: String) async throws -> T? {
         let decoder = JSONDecoder()
-        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         guard let data = try? Data(contentsOf: url) else {
             return nil
         }
@@ -69,7 +74,7 @@ actor FileStorageManager: StorageManager {
     
     @discardableResult
     func deleteObject(forKey key: String) async throws -> Bool {
-        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         try FileManager.default.removeItem(at: url)
         return true
     }
