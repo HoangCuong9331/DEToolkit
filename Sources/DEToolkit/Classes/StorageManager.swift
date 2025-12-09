@@ -17,13 +17,13 @@ public protocol StorageManager {
     ///   - key: A unique key for storing the object.
     /// - Returns: `true` if the object was successfully saved, `false` otherwise.
     @discardableResult
-    func saveObject(_ object: Codable, forKey key: String) async throws -> Bool
+    func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) async throws -> Bool
     
     /// Retrieves a Codable object from storage.
     ///
     /// - Parameter key: The unique key associated with the stored object.
     /// - Returns: The retrieved object of type `T`, or `nil` if the object does not exist or decoding fails.
-    func retrieveObject<T: Codable>(forKey key: String) async throws -> T?
+    func retrieveObject<T: Codable & Sendable>(forKey key: String) async throws -> T?
     
     /// Deletes an object from storage.
     ///
@@ -39,7 +39,7 @@ public protocol CollectiveStorageManager: StorageManager {
     ///
     /// - Parameter prefix: A unique prefix for all key associated with the object
     /// - Returns: An array of Codable objects from storage
-    func retrieveObjects<T: Codable>(withKeyPrefix prefix: String) async -> [T]
+    func retrieveObjects<T: Codable & Sendable>(withKeyPrefix prefix: String) async -> [T]
 }
 
 actor FileStorageManager: StorageManager {
@@ -55,7 +55,7 @@ actor FileStorageManager: StorageManager {
     }
     
     @discardableResult
-    func saveObject(_ object: Codable, forKey key: String) async throws -> Bool {
+    func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) async throws -> Bool {
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(object)
         let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
@@ -63,7 +63,7 @@ actor FileStorageManager: StorageManager {
         return true
     }
     
-    func retrieveObject<T: Codable>(forKey key: String) async throws -> T? {
+    func retrieveObject<T: Codable & Sendable>(forKey key: String) async throws -> T? {
         let decoder = JSONDecoder()
         let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         guard let data = try? Data(contentsOf: url) else {
@@ -86,7 +86,7 @@ public actor KeychainManager: StorageManager {
     public init() { }
     
     @discardableResult
-    public func saveObject(_ object: Codable, forKey key: String) -> Bool {
+    public func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
             return false
@@ -106,7 +106,7 @@ public actor KeychainManager: StorageManager {
         return status == errSecSuccess
     }
     
-    public func retrieveObject<T: Codable>(forKey key: String) -> T? {
+    public func retrieveObject<T: Codable & Sendable>(forKey key: String) -> T? {
         guard let kTrue = kCFBooleanTrue else { return nil }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -157,7 +157,7 @@ public actor UserDefaultManager: CollectiveStorageManager {
     }
     
     @discardableResult
-    public func saveObject(_ object: Codable, forKey key: String) -> Bool {
+    public func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) -> Bool {
         let encoder = JSONEncoder()
         guard let encodedData = try? encoder.encode(object) else {
             return false
@@ -167,7 +167,7 @@ public actor UserDefaultManager: CollectiveStorageManager {
         return UserDefaults.standard.synchronize()
     }
     
-    public func retrieveObject<T: Codable>(forKey key: String) -> T? {
+    public func retrieveObject<T: Codable & Sendable>(forKey key: String) -> T? {
         guard let data = UserDefaults.standard.data(forKey: key) else {
             return nil
         }
@@ -176,7 +176,7 @@ public actor UserDefaultManager: CollectiveStorageManager {
         return try? decoder.decode(T.self, from: data)
     }
     
-    public func retrieveObjects<T: Codable>(withKeyPrefix prefix: String) -> [T] {
+    public func retrieveObjects<T: Codable & Sendable>(withKeyPrefix prefix: String) -> [T] {
         let defaults = UserDefaults.standard
         let allKeys = defaults.dictionaryRepresentation().keys
 
