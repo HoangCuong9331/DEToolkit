@@ -16,22 +16,68 @@ public protocol StorageManager {
     ///   - object: The Codable object to be saved.
     ///   - key: A unique key for storing the object.
     /// - Returns: `true` if the object was successfully saved, `false` otherwise.
-    func saveObject(_ object: Codable, forKey key: String) -> Bool
+    @discardableResult
+    func saveObject(_ object: Codable, forKey key: String) async throws -> Bool
     
     /// Retrieves a Codable object from storage.
     ///
     /// - Parameter key: The unique key associated with the stored object.
     /// - Returns: The retrieved object of type `T`, or `nil` if the object does not exist or decoding fails.
-    func retrieveObject<T: Codable>(forKey key: String) -> T?
+    func retrieveObject<T: Codable>(forKey key: String) async throws -> T?
     
     /// Deletes an object from storage.
     ///
     /// - Parameter key: The unique key associated with the object to be deleted.
     /// - Returns: `true` if the object was successfully deleted, `false` otherwise.
-    func deleteObject(forKey key: String) -> Bool
+    @discardableResult
+    func deleteObject(forKey key: String) async throws -> Bool
 }
 
-public final class KeychainManager: StorageManager {
+public protocol CollectiveStorageManager: StorageManager {
+    
+    /// Retrieves an array of Codable objects from storage
+    ///
+    /// - Parameter prefix: A unique prefix for all key associated with the object
+    /// - Returns: An array of Codable objects from storage
+    func retrieveObjects<T: Codable>(withKeyPrefix prefix: String) async -> [T]
+}
+
+actor FileStorageManager: StorageManager {
+    private let cacheDirectoryURL: URL
+
+    public init(cacheDirectoryURL: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
+        self.cacheDirectoryURL = cacheDirectoryURL
+    }
+    
+    @discardableResult
+    func saveObject(_ object: Codable, forKey key: String) async throws -> Bool {
+        let encoder = JSONEncoder()
+        let encodedData = try encoder.encode(object)
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        try encodedData.write(to: url)
+        return true
+    }
+    
+    func retrieveObject<T: Codable>(forKey key: String) async throws -> T? {
+        let decoder = JSONDecoder()
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        guard let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        return try decoder.decode(T.self, from: data)
+    }
+    
+    @discardableResult
+    func deleteObject(forKey key: String) async throws -> Bool {
+        let url = cacheDirectoryURL.appendingPathComponent("\(key).diy")
+        try FileManager.default.removeItem(at: url)
+        return true
+    }
+}
+
+
+// TODO: check race conditions and fix with global actor
+public actor KeychainManager: StorageManager {
     public init() { }
     
     @discardableResult
@@ -89,8 +135,21 @@ public final class KeychainManager: StorageManager {
     }
 }
 
-public final class UserDefaultManager: StorageManager {
-    public init() { }
+// TODO: check race conditions and fix with global actor
+public actor UserDefaultManager: CollectiveStorageManager {
+    let userDefaults: UserDefaults
+    
+    public init(suiteName: String? = nil) {
+        if let suiteName = suiteName {
+            if suiteName.starts(with: "group.") {
+                userDefaults = UserDefaults.standard
+            } else {
+                userDefaults = UserDefaults(suiteName: suiteName)!
+            }
+        } else {
+            userDefaults = UserDefaults.standard
+        }
+    }
     
     @discardableResult
     public func saveObject(_ object: Codable, forKey key: String) -> Bool {
@@ -110,6 +169,24 @@ public final class UserDefaultManager: StorageManager {
         
         let decoder = JSONDecoder()
         return try? decoder.decode(T.self, from: data)
+    }
+    
+    public func retrieveObjects<T: Codable>(withKeyPrefix prefix: String) -> [T] {
+        let defaults = UserDefaults.standard
+        let allKeys = defaults.dictionaryRepresentation().keys
+
+        var filteredValues: [T] = []
+
+        for key in allKeys where key.hasPrefix(prefix) {
+            if let data = defaults.data(forKey: key) {
+                let decoder = JSONDecoder()
+                guard let tValue: T = try? decoder.decode(T.self, from: data)
+                else { continue }
+                filteredValues.append(tValue)
+            }
+        }
+
+        return filteredValues
     }
     
     @discardableResult
