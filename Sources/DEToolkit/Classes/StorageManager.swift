@@ -42,7 +42,7 @@ public protocol CollectiveStorageManager: StorageManager {
     func retrieveObjects<T: Codable & Sendable>(withKeyPrefix prefix: String) async -> [T]
 }
 
-actor FileStorageManager: StorageManager {
+public actor FileStorageManager: StorageManager {
     private let cacheDirectoryURL: URL
     private let suite: String
 
@@ -55,7 +55,7 @@ actor FileStorageManager: StorageManager {
     }
     
     @discardableResult
-    func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) async throws -> Bool {
+    public func saveObject<T: Codable & Sendable>(_ object: T, forKey key: String) async throws -> Bool {
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(object)
         let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
@@ -63,7 +63,7 @@ actor FileStorageManager: StorageManager {
         return true
     }
     
-    func retrieveObject<T: Codable & Sendable>(forKey key: String) async throws -> T? {
+    public func retrieveObject<T: Codable & Sendable>(forKey key: String) async throws -> T? {
         let decoder = JSONDecoder()
         let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         guard let data = try? Data(contentsOf: url) else {
@@ -73,13 +73,12 @@ actor FileStorageManager: StorageManager {
     }
     
     @discardableResult
-    func deleteObject(forKey key: String) async throws -> Bool {
+    public func deleteObject(forKey key: String) async throws -> Bool {
         let url = cacheDirectoryURL.appendingPathComponent("\(key).\(suite)")
         try FileManager.default.removeItem(at: url)
         return true
     }
 }
-
 
 // TODO: check race conditions and fix with global actor
 public actor KeychainManager: StorageManager {

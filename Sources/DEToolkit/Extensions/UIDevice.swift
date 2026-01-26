@@ -9,10 +9,7 @@ import UIKit
 
 public extension UIDevice {
     var hasNotch: Bool {
-        let bottom = bottomSafeAreaInset
-        print("hasNotch")
-        print(bottom)
-        return bottom > 0
+        return bottomSafeAreaInset > 0
     }
     
     var bottomSafeAreaInset: CGFloat {
