@@ -8,7 +8,7 @@
 import Foundation
 import Security
 
-public protocol StorageManager {
+public protocol StorageManager: ObservableObject {
     
     /// Saves a Codable object to storage.
     ///
